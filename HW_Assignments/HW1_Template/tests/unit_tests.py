@@ -2,6 +2,7 @@
 # This file contains unit tests of individual methods.
 
 from src.CSVDataTable import CSVDataTable
+from src.RDBDataTable import RDBDataTable
 import logging
 import os
 import pandas as pd
@@ -19,6 +20,7 @@ logger.setLevel(logging.DEBUG)
 data_dir = os.path.abspath("../Data/Baseball")
 
 
+# ----- CSVDataTable Unit Test Functions ----- #
 def t_csv_load():
     connect_info = {
         "directory": data_dir,
@@ -179,7 +181,6 @@ def t_csv_save():
     csv_tbl.save()
 
 
-# ----- CSVDataTable Unit Test Functions ----- #
 # t_csv_load()
 # t_csv_find_by_template()
 # t_csv_find_by_key()
@@ -193,4 +194,204 @@ def t_csv_save():
 # t_csv_save()
 
 # ----- RDBDataTable Unit Test Functions ----- #
+def t_rdb_find_by_template():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
 
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, None)
+
+    template = {"nameLast": "Williams", "birthCity": "San Diego"}
+    result = rdb_tbl.find_by_template(template, field_list=["playerID", "nameLast", "nameFirst"])
+    print("Found by template")
+    print(str(pd.DataFrame(result)))
+
+
+def t_rdb_find_by_primary_key():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, ["playerID"])
+
+    key_fields = ["willite01"]
+    result = rdb_tbl.find_by_primary_key(key_fields, field_list=["playerID", "nameLast", "nameFirst"])
+    print("Found by key")
+    print(str(pd.DataFrame(result)))
+
+
+def t_rdb_del_by_template():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, None)
+
+    new_record = {"playerID": "lawleza01", "nameLast": "Lawless", "nameFirst": "Zach", "birthCity": "Dallas"}
+    rdb_tbl.insert(new_record)
+
+    n_deletions = rdb_tbl.delete_by_template(new_record)
+    print("Deleted " + str(n_deletions) + " records")
+
+
+def t_rdb_del_by_key():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, ["playerID"])
+
+    new_record = {"playerID": "lawleza01", "nameLast": "Lawless", "nameFirst": "Zach", "birthCity": "Dallas"}
+    rdb_tbl.insert(new_record)
+
+    new_record_key_fields = [new_record["playerID"]]
+    n_deletions = rdb_tbl.delete_by_key(new_record_key_fields)
+    print("Deleted " + str(n_deletions) + " records")
+
+
+def t_rdb_update_by_template():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, None)
+
+    new_record = {"playerID": "lawleza01", "nameLast": "Lawless", "nameFirst": "Zach", "birthCity": "Dallas"}
+    rdb_tbl.insert(new_record)
+
+    result = rdb_tbl.find_by_template(new_record, field_list=["playerID", "nameLast", "nameFirst", "birthCity"])
+    print("Found inserted record")
+    print(str(pd.DataFrame(result)))
+
+    new_values = {"birthCity": "Fort Worth"}
+    n_updates = rdb_tbl.update_by_template(new_record, new_values)
+    print("Updated " + str(n_updates) + " records")
+
+    result = rdb_tbl.find_by_template({"playerID": "lawleza01"}, field_list=["playerID", "nameLast", "nameFirst", "birthCity"])
+    print("Found updated record")
+    print(str(pd.DataFrame(result)))
+
+    n_deletions = rdb_tbl.delete_by_template({"playerID": "lawleza01"})
+    print("Deleted " + str(n_deletions) + " records")
+
+
+def t_rdb_update_by_key():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, ["playerID"])
+
+    new_record = {"playerID": "lawleza01", "nameLast": "Lawless", "nameFirst": "Zach", "birthCity": "Dallas"}
+    rdb_tbl.insert(new_record)
+
+    key_fields = ["lawleza01"]
+    result = rdb_tbl.find_by_primary_key(key_fields, field_list=["playerID", "nameLast", "nameFirst", "birthCity"])
+    print("Found inserted record")
+    print(str(pd.DataFrame(result)))
+
+    new_values = {"birthCity": "Fort Worth"}
+    n_updates = rdb_tbl.update_by_key(key_fields, new_values)
+    print("Updated " + str(n_updates) + " records")
+
+    result = rdb_tbl.find_by_primary_key(key_fields, field_list=["playerID", "nameLast", "nameFirst", "birthCity"])
+    print("Found updated record")
+    print(str(pd.DataFrame(result)))
+
+    n_deletions = rdb_tbl.delete_by_key(key_fields)
+    print("Deleted " + str(n_deletions) + " records")
+
+
+def t_rdb_insert_no_key():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, None)
+
+    new_record = {"playerID": "lawleza01", "nameLast": "Lawless", "nameFirst": "Zach", "birthCity": "Dallas"}
+    rdb_tbl.insert(new_record)
+
+    result = rdb_tbl.find_by_template(new_record, field_list=["playerID", "nameLast", "nameFirst"])
+    print("Found inserted record")
+    print(str(pd.DataFrame(result)))
+
+    n_deletions = rdb_tbl.delete_by_template(new_record)
+    print("Deleted " + str(n_deletions) + " records")
+
+
+def t_rdb_insert_with_key():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, ["playerID"])
+
+    new_record = {"playerID": "lawleza01", "nameLast": "Lawless", "nameFirst": "Zach", "birthCity": "Dallas"}
+    rdb_tbl.insert(new_record)
+
+    new_record_key_fields = [new_record["playerID"]]
+    result = rdb_tbl.find_by_primary_key(new_record_key_fields, field_list=["playerID", "nameLast", "nameFirst"])
+    print("Found inserted record")
+    print(str(pd.DataFrame(result)))
+
+    n_deletions = rdb_tbl.delete_by_key(new_record_key_fields)
+    print("Deleted " + str(n_deletions) + " records")
+
+
+def t_rdb_insert_with_key_failure():
+    connect_info = {
+        "host": "localhost",
+        "user": "dbuser",
+        "password": "dbuserdbuser",
+        "db": "lahman2019raw",
+
+    }
+
+    rdb_tbl = RDBDataTable("people", connect_info, ["playerID"])
+
+    new_record = {"playerID": "willite01", "nameLast": "Williams", "nameFirst": "Ted",}
+    rdb_tbl.insert(new_record)
+
+
+# t_rdb_find_by_template()
+# t_rdb_find_by_primary_key()
+# t_rdb_del_by_template()
+# t_rdb_del_by_key()
+# t_rdb_update_by_template()
+# t_rdb_update_by_key()
+# t_rdb_insert_no_key()
+# t_rdb_insert_with_key()
+# t_rdb_insert_with_key_failure()

@@ -207,7 +207,7 @@ class CSVDataTable(BaseDataTable):
             if len(self.find_by_primary_key(new_record_key_fields)) == 0:
                 self._rows.append(new_record)
             else:
-                print("Violates primary key, insertion not performed")
+                raise ValueError("Violates primary key, insertion not performed")
         else:
             self._rows.append(new_record)
 
