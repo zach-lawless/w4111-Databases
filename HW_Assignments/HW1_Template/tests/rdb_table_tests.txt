@@ -1,0 +1,45 @@
+--- RDBDataTable test ---
+No Primary Key
+<src.RDBDataTable.RDBDataTable object at 0x7fbc000a8990>
+ - testing find_by_template
+Found by template
+    playerID  nameLast nameFirst
+0  willite01  Williams       Ted
+1  willitr01  Williams    Trevor
+ - testing insert a new record, updating the record, and deleting the record
+insert into lahman2019raw.people (`playerID`, `nameLast`, `nameFirst`, `birthCity`) values ('lawleza01', 'Lawless', 'Zach', 'Dallas')
+Found inserted record
+    playerID nameLast nameFirst birthCity
+0  lawleza01  Lawless      Zach    Dallas
+update lahman2019raw.people set `birthCity`='Fort Worth' where playerID=%s and nameLast=%s and nameFirst=%s and birthCity=%s
+Updated 1 records
+Found updated record
+    playerID nameLast nameFirst   birthCity
+0  lawleza01  Lawless      Zach  Fort Worth
+Deleted 1 records
+With Primary Key
+ - testing load and find
+<src.RDBDataTable.RDBDataTable object at 0x7fbc10137550>
+Found by key
+    playerID  nameLast nameFirst
+0  willite01  Williams       Ted
+ - testing insert a new record, updating the record, and deleting the record
+insert into lahman2019raw.people (`playerID`, `nameLast`, `nameFirst`, `birthCity`) values ('lawleza01', 'Lawless', 'Zach', 'Dallas')
+Found inserted record
+    playerID nameLast nameFirst birthCity
+0  lawleza01  Lawless      Zach    Dallas
+update lahman2019raw.people set `birthCity`='Fort Worth' where playerID=%s
+Updated 1 records
+Found updated record
+    playerID nameLast nameFirst   birthCity
+0  lawleza01  Lawless      Zach  Fort Worth
+Deleted 1 records
+ - showing that insert with a key that already exists doesnt execute
+Traceback (most recent call last):
+  File "/Users/zachlawless/Documents/Education/Columbia/COMSW4111/HW_Assignments/HW1_Template/tests/rdb_table_tests.py", line 98, in <module>
+    main()
+  File "/Users/zachlawless/Documents/Education/Columbia/COMSW4111/HW_Assignments/HW1_Template/tests/rdb_table_tests.py", line 94, in main
+    rdb_tbl.insert(new_record)
+  File "/Users/zachlawless/Documents/Education/Columbia/COMSW4111/HW_Assignments/HW1_Template/src/RDBDataTable.py", line 143, in insert
+    raise ValueError("Can't insert new_record, violates table key")
+ValueError: Can't insert new_record, violates table key
