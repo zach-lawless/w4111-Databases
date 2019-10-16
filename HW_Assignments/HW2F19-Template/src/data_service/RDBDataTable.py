@@ -1,7 +1,4 @@
-
-
 #########################################################
-#
 #
 # YOU HAVE TO IMPLEMENT SOME METHODS FROM THIS FILE, BUT MOST OF THE FILE
 # IS JUST THE SOLUTION TO THE HW1 RDBDataTable SECTION.
@@ -41,7 +38,7 @@ class RDBDataTable():
     # NOTE: You may just use the default connector if you want.
     _default_connect_info = {
         'host': 'localhost',
-        'user': 'root',
+        'user': 'dbuser',
         'password': 'dbuserdbuser',
         'db': 'lahman2019clean',
         'port': 3306
@@ -57,10 +54,9 @@ class RDBDataTable():
         :param key_columns: List, in order, of the columns (fields) that comprise the primary key.
         """
 
-        # RDBDataTable is not told the keys. It can extract from the schema using DML statememts.
+        # RDBDataTable is not told the keys. It can extract from the schema using DML statements.
         if key_columns is not None:
-            raise ValueError("RDBs know the keys. You should set in the DB use DML."
-            )
+            raise ValueError("RDBs know the keys. You should set in the DB use DML.")
 
         # Initialize and store information in the parent class.
         super().__init__()
@@ -92,8 +88,7 @@ class RDBDataTable():
         self._key_columns = None
         self._sample_rows = None
         self._related_resources = None
-        self_columns = None
-
+        self._columns = None
 
         """
         You should implement these methods. See the implementation templates below.
@@ -101,8 +96,9 @@ class RDBDataTable():
         self.get_primary_key_columns()
         self.get_row_count()
         self.get_sample_rows()
+        self.get_columns()
         # DFF Remove below.
-        self.get_related_resources()
+        # self.get_related_resources()
 
     def __str__(self):
         """
@@ -114,6 +110,7 @@ class RDBDataTable():
         result += "\ndb_name = " + self._db_name
         result += "\nTable type = " + str(type(self))
         result += "\nKey fields: " + str(self._key_columns)
+        result += "\nColumns: " + str(self._columns)
         result += "\nNo. of rows = " + str(self._row_count)
         result += "\nA few sample rows = \n" + str(self._sample_rows)
         result += "\nRelated resources:\n" + json.dumps(self._related_resources, indent=2)
@@ -121,51 +118,44 @@ class RDBDataTable():
         return result
 
     def get_row_count(self):
-        """
-
-        :return: Returns the count of the number of rows in the table.
-        """
-
-        # -- TO IMPLEMENT --
+        q = f"select COUNT(*) as COUNT from {self._full_table_name}"
+        res = dbutils.run_q(sql=q, conn=self._cnx)
+        self._row_count = res[1][0].get("COUNT")
 
     def get_primary_key_columns(self):
-        """
+        q = f"SHOW KEYS FROM {self._full_table_name} WHERE Key_name = 'PRIMARY'"
+        res = dbutils.run_q(sql=q, conn=self._cnx)[1]
+        keys = [item["Column_name"] for item in res]
+        self._key_columns = keys
 
-        :return: A list of the primary key columns ordered by their position in the key.
-        """
-
-        # -- TO IMPLEMENT --
-
-        # Hint. Google "get primary key columns mysql"
-        # Hint. THE ORDER OF THE COLUMNS IN THE KEY DEFINITION MATTERS.
-
-    def get_sample_rows(self, no_of_rows=_rows_to_print):
-        """
-
-        :param no_of_rows: Number of rows to include in a sample of the data.
-        :return: A Pandas dataframe containing the first _row_to_print number of rows.
-        """
+    def get_sample_rows(self):
         q = "select * from " + self._full_table_name + " limit " + str(RDBDataTable._rows_to_print)
         self._sample_rows = pd.read_sql(q, self._cnx)
 
-    def get_related_resources(self):
-        """
+    def get_columns(self):
+        q = f"SHOW COLUMNS FROM {self._full_table_name}"
+        res = dbutils.run_q(sql=q, conn=self._cnx)[1]
+        cols = [item["Field"] for item in res]
+        self._columns = cols
 
-        :return:
-        """
+    # def get_related_resources(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #
+    #     # -- THANK ALY AND ARA --
+    #     # Aly and Ara told me to get rid of this requirement or they would be unhappy.
+    #     #
+    #     pass
 
-        # -- THANK ALY AND ARA --
-        # Aly and Ara told me to get rid of this requirement or they would be unhappy.
-        #
-        pass
-
-    def get_links(self, target_table = None):
-
-
-        # -- THANK ALY AND ARA --
-        # Aly and Ara told me to get rid of this requirement or they would be unhappy.
-        #
-        pass
+    # def get_links(self, target_table = None):
+    #
+    #
+    #     # -- THANK ALY AND ARA --
+    #     # Aly and Ara told me to get rid of this requirement or they would be unhappy.
+    #     #
+    #     pass
 
     ####################################################################################################
     #
@@ -206,14 +196,13 @@ class RDBDataTable():
         :param limit: Do not worry about this for now.
         :param offset: Do not worry about this for now.
         :param order_by: Do not worry about this for now.
+        :param commit: Don not worry about this for now.
         :return: A list containing dictionaries. A dictionary is in the list representing each record
             that matches the template. The dictionary only contains the requested fields.
         """
 
-        result = None
-
         try:
-            sql, args = dbutils.create_select(self._full_table_name, template=template, fields=field_list)
+            sql, args = dbutils.create_select(self._full_table_name, template=template, fields=field_list, limit=limit)
             res, data = dbutils.run_q(sql=sql, args=args, conn=self._cnx, commit=True, fetch=True)
         except Exception as e:
             print("Exception e = ", e)
@@ -302,17 +291,14 @@ class RDBDataTable():
         #
         pass
 
-
     def navigate_path(self, pk, target_name, query_template, fields):
         # -- THANK ALY AND ARA --
         # Aly and Ara told me to get rid of this requirement or they would be unhappy.
         #
         pass
 
-
     def navigate_path_and_key(self, pk, target_name, tk, fields):
         # -- THANK ALY AND ARA --
         # Aly and Ara told me to get rid of this requirement or they would be unhappy.
         #
         pass
-
